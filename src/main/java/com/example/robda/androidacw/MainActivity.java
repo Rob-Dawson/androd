@@ -20,39 +20,34 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity
-{
-    private class downloadJSON extends AsyncTask<String, String, String>
-    {
-        protected String doInBackground(String... args)
-        {
+public class MainActivity extends AppCompatActivity {
+    private class downloadJSON extends AsyncTask<String, String, String> {
+        protected String doInBackground(String... args) {
             String formattedResult = "";
-        try
-            {
-            ContentValues values = new ContentValues();
-            SQLiteDatabase db = m_DBHelper.getWritableDatabase();
-            SQLiteDatabase dbread = m_DBHelperRead.getReadableDatabase();
-            String[] projection = {
-                    PuzzleDBContract.PuzzleEntry._ID,
-                    PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME
-            };
+            try {
+                ContentValues values = new ContentValues();
+                SQLiteDatabase db = m_DBHelper.getWritableDatabase();
+                SQLiteDatabase dbread = m_DBHelperRead.getReadableDatabase();
+                String[] projection = {
+                        PuzzleDBContract.PuzzleEntry._ID,
+                        PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME
+                };
 
-            Cursor c = dbread.query(
-                    PuzzleDBContract.PuzzleEntry.TABLE_NAME,
-                    projection,
-                    null,
-                    null,
-                    null,
-                    null,
-                    null
-            );
-            String result = "";
+                Cursor c = dbread.query(
+                        PuzzleDBContract.PuzzleEntry.TABLE_NAME,
+                        projection,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null
+                );
+                String result = "";
 
-                InputStream stream = (InputStream)new URL(args[0]).getContent();
+                InputStream stream = (InputStream) new URL(args[0]).getContent();
                 BufferedReader reader = new BufferedReader(new InputStreamReader(stream));
                 String line = "";
-                while(line != null)
-                {
+                while (line != null) {
                     line = reader.readLine();
                     result += line;
                 }
@@ -62,69 +57,58 @@ public class MainActivity extends AppCompatActivity
                 JSONArray puzzles = json.getJSONArray("PuzzleIndex");
 
                 //c.moveToFirst();
-               // String name = c.getString(c.getColumnIndexOrThrow(PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME));
+                // String name = c.getString(c.getColumnIndexOrThrow(PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME));
 
-                if(c.getCount()<=0)
-                {
-                    for (int i = 0; i < puzzles.length(); i++)
-                    {
+                if (c.getCount() <= 0) {
+                    for (int i = 0; i < puzzles.length(); i++) {
                         values.put(PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME, puzzles.getString(i));
                         db.insert(PuzzleDBContract.PuzzleEntry.TABLE_NAME, null, values);
                         Log.i("Database", "Inserted in new database " + puzzles.getString(i));
                     }
-                }
-                else
-                {
+                } else {
                     int j = 0;
                     c.moveToFirst();
-                    do
-                {
-                    for (int i = 0; i < puzzles.length(); i++)
-                    {
-                        String name = c.getString(c.getColumnIndexOrThrow(PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME));
-                        if (name.equals(puzzles.get(i).toString()))
-                        {
-                            c.moveToNext();
-                            continue;
+                    do {
+                        for (int i = 0; i < puzzles.length(); i++) {
+                            String name = c.getString(c.getColumnIndexOrThrow(PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME));
+                            if (name.equals(puzzles.get(i).toString())) {
+                                c.moveToNext();
+                                continue;
+                            } else {
+                                values.put(PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME, puzzles.getString(i));
+                                db.insert(PuzzleDBContract.PuzzleEntry.TABLE_NAME, null, values);
+                            }
                         }
-                        else
-                        {
-                            values.put(PuzzleDBContract.PuzzleEntry.COLUMN_NAME_NAME, puzzles.getString(i));
-                            db.insert(PuzzleDBContract.PuzzleEntry.TABLE_NAME, null, values);
-                        }
-                    }
-                } while (c.moveToNext());
+                    } while (c.moveToNext());
                 }
                 c.close();
-            }catch (Exception e)
-            {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             return formattedResult;
         }
     }
+
     PuzzleDBHelper m_DBHelper = new PuzzleDBHelper(this);
     PuzzleDBHelper m_DBHelperRead = new PuzzleDBHelper(this);
     ContentValues values = new ContentValues();
+
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
     }
 
-    public void onClickDownloadPuzzles(View view)
-    {
+    public void onClickDownloadPuzzles(View view) {
         new downloadJSON().execute("http://www.simongrey.net/08027/slidingPuzzleAcw/index.json");
         Toast.makeText(this, "Downloaded JSON", Toast.LENGTH_SHORT).show();
-        TextView same = (TextView)findViewById(R.id.textView);
+        TextView same = (TextView) findViewById(R.id.textView);
         same.setText("Hello");
     }
 
 
-    public void onClickStoredPuzzles(View view)
-    {
+    public void onClickStoredPuzzles(View view) {
         SQLiteDatabase dbread = m_DBHelperRead.getReadableDatabase();
         String[] projection = {
                 PuzzleDBContract.PuzzleEntry._ID,
@@ -140,12 +124,9 @@ public class MainActivity extends AppCompatActivity
                 null,
                 null
         );
-        if (c.getCount() <= 0)
-        {
+        if (c.getCount() <= 0) {
             Toast.makeText(this, "No stored puzzles. Please download puzzles", Toast.LENGTH_SHORT).show();
-        }
-        else
-        {
+        } else {
             Intent intent = new Intent(this, SelectPuzzleActivity.class);
             startActivity(intent);
         }

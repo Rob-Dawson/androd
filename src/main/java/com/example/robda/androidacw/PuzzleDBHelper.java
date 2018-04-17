@@ -21,6 +21,7 @@ public class PuzzleDBHelper extends SQLiteOpenHelper
     public void onCreate(SQLiteDatabase pDb)
     {
         pDb.execSQL(PuzzleDBContract.SQL_CREATE_PUZZLE_TABLE);
+        pDb.execSQL(PuzzleDBContract.SQL_CREATE_LAYOUT_TABLE);
     }
 
     public void onUpgrade(SQLiteDatabase pDb, int pOldVersion, int pNewVersion)
